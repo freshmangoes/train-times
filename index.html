@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <title>Title</title>
+</head>
+
+<body class="bg-secondary">
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="jumbotron text-center text-light bg-dark">
+          <h1>
+            Everything is Always Late
+          </h1>
+          <h5>The Worst Train Schedule Ever</h5>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">Train Name</th>
+              <th scope="col">Destination</th>
+              <th scope="col">Frequency (min)</th>
+              <th scope="col">Next Arrival</th>
+              <th scope="col">Minutes Away</th>
+            </tr>
+          </thead>
+          <tbody id="train-table">
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card bg-dark text-light">
+          <div class="card-body">
+            <h5 class="card-title">Add a Train</h5>
+
+            <form>
+              <div class="form-group">
+                <label for="name-input">Train Name</label>
+                <input class="form-control bg-dark text-light" type="text" id="name-input">
+              </div>
+    
+              <div class="form-group">
+                <label for="destination-input">Destination</label>
+                <input type="text" class="form-control bg-dark text-light" id="destination-input">
+              </div>
+    
+              <div class="form-group">
+                <label for="firsttime-input">First Train Time (HH:mm - military time)</label>
+                <input class="form-control bg-dark text-light" type="text" id="firsttime-input">
+              </div>
+    
+              <div class="form-group">
+                <label for="frequency-input">Frequency</label>
+                <input type="text" class="form-control bg-dark text-light" id="frequency-input">
+              </div>
+              <button id="add-train" type="submit" class="btn btn-outline-primary">Submit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-database.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+
+</html>
