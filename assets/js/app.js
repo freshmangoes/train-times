@@ -13,6 +13,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 
+// variable for firebase database
 var db = firebase.database();
 
 // jQuery caching to make my life easier :)
@@ -22,24 +23,9 @@ var firstTime = $('#firsttime-input');
 var frequency = $('#frequency-input');
 var trainTable = $('#train-table');
 
-// calculates next train arrival time
-var calculateNextArrival = (first, interval) => {
-  // get the current time
-  var currentTime = moment();
+$(document).ready(()=> {
 
-  // variable to be mutated into next arrival time
-  var tempTime = first;
-
-  // while tempTime is before currentTime = moment()
-  while(tempTime.isBefore(currentTime)) {
-    // add the interval of the train 
-    tempTime.add(interval, "minutes");
-    // debug
-    console.log(`Next time iteration: ${tempTime}`);
-  }
-  // return the tempTime to get next train arrival
-  return tempTime.format("HH:mm");
-};
+});
 
 $('#add-train').click((event)=> {
   event.preventDefault();
@@ -55,9 +41,17 @@ $('#add-train').click((event)=> {
     // debug
     console.log("valid time input");
 
-    var next = moment(firstTimeInput, "HH:mm");
-    var nextArrival = calculateNextArrival(next, frequencyInput);
-    
+    // makes a moment object out of firstTimeInput
+    var first = moment(firstTimeInput, "HH:mm");
+    // calculates next train arrival in military time
+    var nextArrival = calculateNextArrival(first, frequencyInput);
+    // formats nextArrival into 12hour time from military time
+    var nextTrainArrival = nextArrival.format("hh:mm A" );
+
+    var now = moment();
+    var then = moment(nextArrival, "HH:mm");
+    var minsAway = minutesAway(now, then);
+
     // debug
     console.log('nextArrival', nextArrival);
 
@@ -65,8 +59,9 @@ $('#add-train').click((event)=> {
     db.ref().push({
       trainInput,
       destinationInput,
-      nextArrival,
-      frequencyInput
+      nextTrainArrival,
+      frequencyInput,
+      minsAway
     });
 
     // user input invalid
@@ -84,31 +79,48 @@ $('#add-train').click((event)=> {
 db.ref().on("child_added", (childSnap) => {
   var snapVal = childSnap.val();
   console.log(`Child snapVal ${snapVal}`);
-  
   // populate the table with information from the child added
   populateTable(childSnap);
 });
 
 // populates table
 var populateTable = (data) => {
-  
   // jQuery cache variables 
   var tr = $('<tr>');
-
   // adds class train to the row
   tr.addClass('train');
-
   // inputs train, destination, frequency, and first time - will have to chance first time to relative time/next arrival
   var thTrain = $('<th>').text(data.val().trainInput);
   thTrain.attr('scope', 'row');
   var tdDestination = $('<td>').text(data.val().destinationInput);
   var tdFrequency = $('<td>').text(data.val().frequencyInput);
-  var tdNext = $('<td>').text(data.val().nextArrival);
-
+  var tdNext = $('<td>').text(data.val().nextTrainArrival);
+  var tdMinsAway = $('<td>').text(data.val().minsAway);
   // appends all of the inputs to the table row
-  tr.append(thTrain, tdDestination, tdNext, tdFrequency);
-
+  tr.append(thTrain, tdDestination, tdNext, tdFrequency, tdMinsAway);
   // prepends table row to the table
   $('#train-table').prepend(tr);
+};
+
+// calculates next train arrival time
+var calculateNextArrival = (first, interval) => {
+  // get the current time
+  var currentTime = moment();
+  // variable to be mutated into next arrival time
+  var tempTime = first;
+  // while tempTime is before currentTime = moment()
+  while(tempTime.isBefore(currentTime)) {
+    // add the interval of the train 
+    tempTime.add(interval, "minutes");
+    // debug
+    console.log(`Next time iteration: ${tempTime}`);
+  }
+  // return the tempTime to get next train arrival
+  // return tempTime.format("HH:mm");
+  return tempTime;
+};
+
+var minutesAway = (current, next) => {
+  return next.diff(current, "minutes");
 };
 
