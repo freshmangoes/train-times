@@ -51,8 +51,8 @@
     var thTrain = $('<th>').text(data.val().trainInput);
     thTrain.attr('scope', 'row');
     var tdDestination = $('<td>').text(data.val().destinationInput);
-    var tdFirstTime = $('<td>').text(data.val().firstTimeInput);
     var tdFrequency = $('<td>').text(data.val().frequencyInput);
+    var tdFirstTime = $('<td>').text(data.val().firstTimeInput);
 
     tr.append(thTrain, tdDestination, tdFirstTime, tdFrequency);
     $('#train-table').append(tr);
