@@ -16,7 +16,6 @@ firebase.analytics();
 // variable for firebase database
 var db = firebase.database();
 
-
 // jQuery caching to make my life easier :)
 var trainName = $('#name-input');
 var destination = $('#destination-input');
@@ -53,6 +52,7 @@ $('#add-train').click((event)=> {
     var nextTrainArrival = nextArrival.format("hh:mm A" );
 
     var now = moment();
+    // converts nextArrival into usable 24hr format
     var then = moment(nextArrival, "HH:mm");
     var minsAway = minutesAway(now, then);
 
@@ -105,25 +105,21 @@ var populateTable = (data) => {
 // calculates next train arrival time
 var calculateNextArrival = (first, interval) => {
   // get the current time
-  var currentTime = moment();
+  var now = moment();
   // variable to be mutated into next arrival time
-  var tempTime = first;
-  // while tempTime is before currentTime = moment()
-  while(tempTime.isBefore(currentTime)) {
+  var momentObj = first;
+  // while momentObj is before now = moment()
+  while(momentObj.isBefore(now)) {
     // add the interval of the train 
-    tempTime.add(interval, "minutes");
-    // debug
-    console.log(`Next time iteration: ${tempTime}`);
+    momentObj.add(interval, "minutes");
   }
 
-  // return the tempTime to get next train arrival
-  // return tempTime.format("HH:mm");
-  return tempTime;
+  // returns momentObj as a moment object 
+  console.log(momentObj);
+  return momentObj;
 };
 
 var minutesAway = (now, then) => {
-  // console.log("NOW:", now);
-  // console.log("THEN:", then);
   return then.diff(now, "minutes");
 };
 
@@ -137,21 +133,15 @@ var updateTimes = () => {
       // updating nextTrainArrival
       var tempFirst = moment(moment(childSnap.val().nextTrainArrival, "hh:mm A").format("HH:mm"), "HH:mm");
       var tempInterval = childSnap.val().frequencyInput;
-
-      // console.log('tempFirst', tempFirst)
-      var upNext = calculateNextArrival(tempFirst, tempInterval);
-      // console.log('upNext', upNext);
-      
-      
-      // updating minutesAway
-      var tempNow = moment();
-      // console.log('tempThen', tempThen)
-      var upMinsAway = minutesAway(tempNow, upNext);
-      
-      // console.log('upMinsAway', upMinsAway);
-  
-      // format upNext into something usable
-      upNext = upNext.format("hh:mm A");
+      var upNextTrainArrival = calculateNextArrival(tempFirst, tempInterval);
+            
+      // gets new minutesAway
+      var now = moment();
+      // uses new train arrival time to calculate minutes away
+      var upMinsAway = minutesAway(now, upNextTrainArrival);
+        
+      // format upNextTrainArrival into something usable
+      upNextTrainArrival = upNextTrainArrival.format("hh:mm A");
       
       // gets the key for the child
       var key = childSnap.key;
@@ -159,14 +149,13 @@ var updateTimes = () => {
         destinationInput: upDest,
         trainInput: upName,
         frequencyInput: upFreq,
-        nextTrainArrival: upNext,
+        nextTrainArrival: upNextTrainArrival,
         minsAway: upMinsAway
       };
       // empty object for updates
       var updates = {};
       // turns key into the child directory/node nand adds update object
       updates['/' + key] = updateData;
-      // console.log('updates:', updates);
       // pushes updates to database
       db.ref().update(updates);
     });
