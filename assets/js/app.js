@@ -32,28 +32,32 @@ $(document).ready(()=> {
 $('#add-train').click((event)=> {
   event.preventDefault();
 
-  var trainInput, destinationInput, firstTimeInput, frequencyInput;
+  var trainInput, destinationInput, timeInput, frequencyInput;
 
   trainInput = trainName.val().trim();
   destinationInput = destination.val().trim();
   frequencyInput = frequency.val().trim();
-  firstTimeInput = firstTime.val().trim();
+  timeInput = firstTime.val().trim();
   
   // user time input validation
-  if(moment(firstTimeInput, "HH:mm").isValid()) {
+  if(moment(timeInput, "HH:mm").isValid()) {
     // debug
     console.log("valid time input");
 
-    // makes a moment object out of firstTimeInput
-    var first = moment(firstTimeInput, "HH:mm");
-    // calculates next train arrival in military time
-    var nextArrival = calculateNextArrival(first, frequencyInput);
-    // formats nextArrival into 12hour time from military time
-    var nextTrainArrival = nextArrival.format("hh:mm A" );
+    // makes a moment object out of timeInput
+    var timeInput = moment(timeInput, "HH:mm");
 
+    // calculates next train arrival in military time
+    var nextArrival = calculateNextArrival(timeInput, frequencyInput);
+    // formats nextArrival into 12hour time from military time
+    var nextArrivalFormatted = nextArrival.format("hh:mm A");
+
+    // calculates minutes away
     var now = moment();
     // converts nextArrival into usable 24hr format
     var then = moment(nextArrival, "HH:mm");
+    // takes in two times in 24hr format, outputs the 
+    // difference in minutes
     var minsAway = minutesAway(now, then);
 
     // debug
@@ -63,14 +67,14 @@ $('#add-train').click((event)=> {
     db.ref().push({
       trainInput,
       destinationInput,
-      nextTrainArrival,
+      nextTrainArrival: nextArrivalFormatted,
       frequencyInput,
       minsAway
     });
 
 
     // user input invalid
-  } else if(!moment(firstTimeInput, "HH:mm").isValid()){
+  } else if(!moment(timeInput, "HH:mm").isValid()){
     console.error("not a valid time input");
   }
 });
@@ -103,27 +107,29 @@ var populateTable = (data) => {
 };
 
 // calculates next train arrival time
-var calculateNextArrival = (first, interval) => {
+// takes in two parameters, time in military time and interval in minutes
+var calculateNextArrival = (time, interval) => {
   // get the current time
   var now = moment();
   // variable to be mutated into next arrival time
-  var momentObj = first;
-  // while momentObj is before now = moment()
-  while(momentObj.isBefore(now)) {
+  var result = time;
+  // while result is before now = moment()
+  while(result.isBefore(now)) {
     // add the interval of the train 
-    momentObj.add(interval, "minutes");
+    result.add(interval, "minutes");
   }
 
-  // returns momentObj as a moment object 
-  console.log(momentObj);
-  return momentObj;
+  console.log("calculate next arrival result:", result);
+  return result;
 };
 
+// takes in a now and then time in 24 hr format
 var minutesAway = (now, then) => {
   return then.diff(now, "minutes");
 };
 
 var updateTimes = () => {
+  console.log('update times');
   db.ref().once('value', (snap) => {
     snap.forEach((childSnap) => {
       var upDest = childSnap.val().destinationInput;
@@ -131,9 +137,9 @@ var updateTimes = () => {
       var upFreq = childSnap.val().frequencyInput;
 
       // updating nextTrainArrival
-      var tempFirst = moment(moment(childSnap.val().nextTrainArrival, "hh:mm A").format("HH:mm"), "HH:mm");
-      var tempInterval = childSnap.val().frequencyInput;
-      var upNextTrainArrival = calculateNextArrival(tempFirst, tempInterval);
+      var firebaseNextArrival = moment(moment(childSnap.val().nextTrainArrival, "hh:mm A").format("HH:mm"), "HH:mm");
+      var firebaseInterval = childSnap.val().frequencyInput;
+      var upNextTrainArrival = calculateNextArrival(firebaseNextArrival, firebaseInterval);
             
       // gets new minutesAway
       var now = moment();
@@ -161,3 +167,5 @@ var updateTimes = () => {
     });
   });
 }
+
+setInterval(updateTimes, 60000);
